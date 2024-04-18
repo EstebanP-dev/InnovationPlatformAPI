@@ -1,0 +1,4 @@
+@baseURL = {{baseURL}}/countries
+
+GET {{baseURL}}/
+Accept: application/json

@@ -1,0 +1,9 @@
+@baseURL = {{baseURL}}
+
+### Get available member authors for project creation
+GET {{baseURL}}/projects/authors/for_creation
+Accept: application/json
+
+### Get available member assessors for project creation
+GET {{baseURL}}/projects/assessors/for_creation
+Accept: application/json

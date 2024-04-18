@@ -1,0 +1,10 @@
+pydantic
+pymysql
+fastapi
+uvicorn
+SQLAlchemy
+starlette
+python-dotenv
+cryptography
+jose
+passlib
