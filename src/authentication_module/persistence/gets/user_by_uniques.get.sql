@@ -1,9 +1,9 @@
-CREATE PROCEDURE sg_get_user_by_uniques(IN field VARCHAR(255))
+CREATE PROCEDURE sp_get_user_by_uniques(IN field VARCHAR(255))
 BEGIN
-    SELECT u.id, u.email, u.user_name, u.code, u.document_number, u.password_hash,
-           dt.name AS document_type, g.name as gender, u.phone_number,
+    SELECT u.id, mask_pan_or_email(u.email) as email, mask_pan_or_email(u.user_name) as user_name, u.code, mask_pan_or_email(u.document_number) as document_number, u.password_hash,
+           dt.name AS document_type, g.name as gender, mask_pan_or_email(u.phone_number) as phone_number,
            m.birth_date, CONCAT(m.given_name, ' ', m.family_name) AS full_name,
-           COALESCE(JSON_ARRAYAGG(JSON_OBJECT('id', r.id, 'name', r.name)), '[]') as roles
+           COALESCE(JSON_ARRAYAGG(r.name), '[]') as roles
     FROM users u
     USE INDEX (`PRIMARY`, code, document_number, email, phone_number, user_name)
     INNER JOIN members m ON u.id = m.id
@@ -15,3 +15,7 @@ BEGIN
           OR u.document_number = field OR u.phone_number = field
     GROUP BY u.id;
 END;
+
+CALL sp_get_user_by_uniques('jnavia');
+
+SELECT * FROM deliverable_types;

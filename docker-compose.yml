@@ -1,0 +1,20 @@
+version: "3"
+
+services:
+  fastapi:
+    image: image-fastapi
+    build: .
+    container_name: innovation-platform-api
+    ports:
+      - "8000:8000"
+    volumes:
+        - ./:/innovation-platform
+    environment:
+      - MYSQL_USERNAME=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_HOST=localhost
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=ipt_idiomas
+      - SECRET_KEY=c5bfff0866d57527a06b026508053986
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=60

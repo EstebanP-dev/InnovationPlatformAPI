@@ -1,22 +1,37 @@
+import dotenv
+import os
 from fastapi import FastAPI, APIRouter
+from fastapi.middleware.cors import CORSMiddleware
 from src import (
     country_router,
-    authorial_members_router,
-    project_assessors_router,
-    projects_router)
+    projects_router,
+    authentication_module_router)
 from src.shared import GeneralExceptionMiddleware
 
-app = FastAPI(root_path="/api/v1")
-projects_module_router = APIRouter(prefix="/projects", tags=["Projects"])
+dotenv.load_dotenv()
 
-projects_module_router.include_router(authorial_members_router)
-projects_module_router.include_router(project_assessors_router)
-projects_module_router.include_router(projects_router)
+WEB_ORIGIN = os.getenv("WEB_ORIGIN")
+
+print(WEB_ORIGIN)
+
+app = FastAPI(root_path="/api/v1")
+
+origins = [WEB_ORIGIN]
+
 
 app.include_router(country_router)
-app.include_router(projects_module_router)
+app.include_router(authentication_module_router)
+app.include_router(projects_router)
 
 app.middleware("http")(GeneralExceptionMiddleware(app))
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")

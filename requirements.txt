@@ -6,5 +6,8 @@ SQLAlchemy
 starlette
 python-dotenv
 cryptography
+python-jose[cryptography]
 jose
-passlib
+python-multipart
+passlib[bcrypt]
+firebase-admin

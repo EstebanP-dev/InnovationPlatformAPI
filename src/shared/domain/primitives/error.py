@@ -4,8 +4,8 @@ class Error:
         self.message = message
 
     @staticmethod
-    def unauthorized():
-        return Error(401, "Unauthorized")
+    def unauthorized(message: str = "Unauthorized"):
+        return Error(401, message)
 
     @staticmethod
     def not_found(message: str = "Not Found"):
