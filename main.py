@@ -4,9 +4,10 @@ from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from src import (
     country_router,
-    projects_router,
     authentication_module_router)
 from src.shared import GeneralExceptionMiddleware
+
+from src.projects_module import project_module_router
 
 dotenv.load_dotenv()
 
@@ -21,7 +22,7 @@ origins = [WEB_ORIGIN]
 
 app.include_router(country_router)
 app.include_router(authentication_module_router)
-app.include_router(projects_router)
+app.include_router(project_module_router)
 
 app.middleware("http")(GeneralExceptionMiddleware(app))
 
