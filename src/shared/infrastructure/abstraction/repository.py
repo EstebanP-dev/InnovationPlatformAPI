@@ -16,11 +16,46 @@ class Repository(ABC):
 
     def __init__(self, db: Session = Depends(create_session)):
         self._context = db
+        self._delete_template_name = 'sp_delete_'
+        self._get_template_name = 'sp_get_'
+        self._insert_template_name = 'sp_insert_'
+        self._update_template_name = 'sp_modify_'
 
     @property
     @abstractmethod
     def __table_name__(self):
         pass
+
+    async def delete_entity(self, in_params: Dict[str, Any]):
+        _, singular_table_name = self.__table_name__
+        return await self.execute_stored_procedure_with_in_params(
+            f'{self._delete_template_name}{singular_table_name}',
+            in_params)
+
+    async def exists_entity(self, in_params: Dict[str, Any]):
+        _, singular_table_name = self.__table_name__
+        result = await self.execute_stored_procedure_with_in_params(
+            f'{self._get_template_name}{singular_table_name}',
+            in_params)
+        return result
+
+    async def get_entity(self, in_params: Dict[str, Any]):
+        _, singular_table_name = self.__table_name__
+        return await self.execute_stored_procedure_with_in_params(
+            f'{self._get_template_name}{singular_table_name}',
+            in_params)
+
+    async def insert_entity(self, entity):
+        _, singular_table_name = self.__table_name__
+        return await self.execute_stored_procedure_from_model(
+            f'{self._insert_template_name}{singular_table_name}',
+            entity.model_dump())
+
+    async def update_entity(self, entity):
+        _, singular_table_name = self.__table_name__
+        return await self.execute_stored_procedure_from_model(
+            f'{self._update_template_name}{singular_table_name}',
+            entity.model_dump())
 
     async def execute_stored_procedure_from_model(self, sp_name: str, model: Any):
         model_properties = [prop for prop in dir(model) if
@@ -56,7 +91,6 @@ class Repository(ABC):
     async def execute_stored_procedure_with_in_and_out_params(self, sp_name: str,
                                                               in_params: Dict[str, Any],
                                                               out_params: list[str]):
-
         out_params_str = ','.join('@' + param for param in out_params)
 
         call_sp_sql = f"CALL {sp_name}({','.join(

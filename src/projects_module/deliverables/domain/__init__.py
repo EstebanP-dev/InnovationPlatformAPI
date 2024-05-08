@@ -1,1 +1,1 @@
-from .insert_deliverables_entity import InsertDeliverablesEntity
+from .insert_deliverables_entity import InsertDeliverableEntity

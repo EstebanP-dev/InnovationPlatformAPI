@@ -1,8 +1,9 @@
 from src.shared import BaseModel, Field
 
 
-class InsertDeliverablesEntity(BaseModel):
-    type: str = Field(...)
-    name: str = Field(...)
-    url: str = Field(...)
-    description: str = Field(...)
+class InsertDeliverableEntity(BaseModel):
+    type_id: str = Field(...)
+    deliverable_id: str = Field(...)
+    deliverable_name: str = Field(...)
+    deliverable_description: str = Field(...)
+    deliverable_url: str = Field(...)

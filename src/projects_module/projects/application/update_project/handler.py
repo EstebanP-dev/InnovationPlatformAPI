@@ -4,14 +4,15 @@ from src.shared import (Depends,
                         CommandHandler,
                         Result,
                         Error,
+                        Updated,
                         FirebaseProvider)
-from .command import CreateProjectCommand
+from .command import UpdateProjectCommand
 from ...domain import ProjectEntity
 from ...infrastructure import ProjectsRepository
 from ....deliverable_types import DeliverableTypesRepository
 
 
-class CreateProjectCommandHandler(CommandHandler[CreateProjectCommand, str]):
+class UpdateProjectCommandHandler(CommandHandler[UpdateProjectCommand, Updated]):
     def __init__(self,
                  project_repository: ProjectsRepository = Depends(),
                  deliverable_types_repository: DeliverableTypesRepository = Depends(),
@@ -20,7 +21,7 @@ class CreateProjectCommandHandler(CommandHandler[CreateProjectCommand, str]):
         self._deliverable_types_repository = deliverable_types_repository
         self._firebase_provider = firebase_provider
 
-    async def handle(self, command: CreateProjectCommand) -> Result[str]:
+    async def handle(self, command: UpdateProjectCommand) -> Result[Updated]:
         project_id = uuid.uuid4()
 
         authors_str = ','.join(command.authors)
@@ -35,8 +36,8 @@ class CreateProjectCommandHandler(CommandHandler[CreateProjectCommand, str]):
             authors_str=authors_str
         )
 
-        result = await self._project_repository.insert_project(entity)
+        result = await self._project_repository.update_entity(entity)
         if not result:
-            return Result.failure(Error.unexpected('Could not create project'))
+            return Result.failure(Error.unexpected('Could not update the project'))
 
-        return Result.success(result)
+        return Result.success(Updated())

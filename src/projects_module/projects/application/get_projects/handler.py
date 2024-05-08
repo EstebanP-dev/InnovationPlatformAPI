@@ -1,6 +1,6 @@
 from json import loads
 
-from src.shared import Depends, QueryHandler, Result, List
+from src.shared import Depends, QueryHandler, Result, List, Error
 from .query import GetProjectsQuery
 from .response import GetProjectsResponse, ProjectMembersResponse, ProjectDeliverableResponse
 from ...infrastructure import ProjectsRepository
@@ -12,9 +12,21 @@ class GetProjectsQueryHandler(QueryHandler[GetProjectsQuery, GetProjectsResponse
         self._projects_repository = projects_repository
 
     async def handle(self, query: GetProjectsQuery) -> Result[List[GetProjectsResponse]]:
-        projects = await self._projects_repository.get_projects(query.user_id)
+        if not query.project_id and not query.user_id:
+            return Result.failure(Error.validation('Either project_id or user_id must be provided'))
+
+        if query.project_id:
+            projects = await self._projects_repository.get_entity({
+                "project_id": query.project_id,
+            })
+
+        else:
+            projects = await self._projects_repository.get_projects(query.user_id)
 
         response = [self.map_project_to_response(project) for project in projects]
+
+        if query.project_id:
+            return Result.success(response[0])
 
         return Result.success(response)
 
