@@ -23,4 +23,5 @@ CREATE VIEW vw_projects AS
         p.id;
 
 
-SELECT * FROM vw_projects;
+SELECT * FROM projects;
+SELECT * FROM users;

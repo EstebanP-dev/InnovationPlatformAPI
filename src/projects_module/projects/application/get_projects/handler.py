@@ -25,8 +25,16 @@ class GetProjectsQueryHandler(QueryHandler[GetProjectsQuery, GetProjectsResponse
 
         response = [self.map_project_to_response(project) for project in projects]
 
+        if len(response) == 0:
+            return Result.failure(Error.not_found(message='Project(s) not found'))
+
         if query.project_id:
-            return Result.success(response[0])
+            response_one = response[0]
+
+            if not response_one:
+                return Result.failure(Error.not_found(message='Project not found'))
+
+            return Result.success(response_one)
 
         return Result.success(response)
 

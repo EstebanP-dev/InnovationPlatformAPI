@@ -49,7 +49,7 @@ class Repository(ABC):
         _, singular_table_name = self.__table_name__
         return await self.execute_stored_procedure_from_model(
             f'{self._insert_template_name}{singular_table_name}',
-            entity.model_dump())
+            entity)
 
     async def update_entity(self, entity):
         _, singular_table_name = self.__table_name__
@@ -58,8 +58,8 @@ class Repository(ABC):
             entity.model_dump())
 
     async def execute_stored_procedure_from_model(self, sp_name: str, model: Any):
-        model_properties = [prop for prop in dir(model) if
-                            not prop.startswith('_') and not callable(getattr(model, prop))]
+        model_properties = [prop for prop in model.model_dump()
+                            if not prop.startswith('_') and not callable(getattr(model, prop))]
 
         params = {prop: getattr(model, prop) for prop in model_properties}
 
