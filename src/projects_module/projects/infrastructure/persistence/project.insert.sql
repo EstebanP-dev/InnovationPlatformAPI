@@ -66,3 +66,4 @@ SELECT * FROM branches;
 SELECT * FROM project_assessors;
 SELECT * FROM project_types;
 SELECT * FROM vw_authorial_members;
+SELECT * FROM projects;

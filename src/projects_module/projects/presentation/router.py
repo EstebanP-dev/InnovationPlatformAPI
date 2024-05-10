@@ -1,9 +1,7 @@
-from fastapi import APIRouter, Depends, UploadFile, File
-from typing import List
+from fastapi import APIRouter, Depends
 from starlette import status
 
 from src.shared import get_tenant_id, handle_result, get_user_id
-
 from ..application.create_project import CreateProjectRequest, CreateProjectCommand, CreateProjectCommandHandler
 from ..application.delete_project import DeleteProjectCommand, DeleteProjectCommandHandler
 from ..application.get_projects import GetProjectsQuery, GetProjectsQueryHandler

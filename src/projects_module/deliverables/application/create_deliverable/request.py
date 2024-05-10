@@ -9,4 +9,3 @@ class CreateDeliverableRequest(BaseModel):
     name: Optional[str] = Field(None, description="Name of deliverable")
     identifier: Optional[str] = Field(None, description="Identifier of deliverable")
     description: Optional[str] = Field(None, description="Description of deliverable")
-    file: Optional[UploadFile] = Field(None, description="File of deliverable")
