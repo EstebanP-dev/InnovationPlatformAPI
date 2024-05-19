@@ -10,5 +10,4 @@ python-jose[cryptography]
 jose
 python-multipart
 passlib[bcrypt]
-firebase-admin
 pymongo

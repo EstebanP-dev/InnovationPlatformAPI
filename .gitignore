@@ -5,3 +5,4 @@
 **/__pycache__/
 /.run/
 http-client.private.env.json
+/db/

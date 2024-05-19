@@ -14,3 +14,7 @@ BEGIN
     FROM vw_projects
     WHERE id = project_id;
 END;
+
+SELECT * FROM projects WHERE id = '2888c4e1-ec05-4bb0-bfd2-b987cf9e96fe';
+
+CALL sp_delete_project('2888c4e1-ec05-4bb0-bfd2-b987cf9e96fe')

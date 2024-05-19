@@ -7,5 +7,6 @@ class ProjectEntity(BaseModel):
     project_type_id: Optional[str] = Field(None)
     project_title: Optional[str] = Field(None)
     project_description: Optional[str] = Field(None)
+    project_deliverable_folder_id: Optional[str] = Field(None)
     project_status: Optional[str] = Field(None)
     authors_str: Optional[str] = Field(None)

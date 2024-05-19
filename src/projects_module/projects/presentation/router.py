@@ -48,17 +48,6 @@ async def get_all_projects(
     return handle_result(result)
 
 
-@projects_router.get("/{project_id}")
-async def get_project(
-        project_id: str,
-        handler: GetProjectsQueryHandler = Depends()):
-    query = GetProjectsQuery(project_id=project_id)
-
-    result = await handler.handle(query)
-
-    return handle_result(result)
-
-
 @projects_router.get("/status")
 async def get_total_projects_by_status(
         user_id: str = Depends(get_user_id),
@@ -70,12 +59,22 @@ async def get_total_projects_by_status(
     return handle_result(result)
 
 
+@projects_router.get("/{project_id}")
+async def get_project(
+        project_id: str,
+        handler: GetProjectsQueryHandler = Depends()):
+    query = GetProjectsQuery(project_id=project_id)
+
+    result = await handler.handle(query)
+
+    return handle_result(result)
+
+
 @projects_router.delete("/{project_id}", status_code=status.HTTP_200_OK)
 async def delete_project(
         project_id: str,
-        tenant_id: str = Depends(get_tenant_id),
         handler: DeleteProjectCommandHandler = Depends()):
-    command = DeleteProjectCommand(project_id, branch=tenant_id)
+    command = DeleteProjectCommand(project_id=project_id)
 
     result = await handler.handle(command)
 

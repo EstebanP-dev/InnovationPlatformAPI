@@ -1,31 +1,26 @@
 from fastapi import Depends
+import uuid
 
-from src.shared import CommandHandler, Result, Error, Created, FirebaseProvider, List
-
+from src.shared import CommandHandler, Result, Created
 from .command import CreateDeliverableCommand
-
 from ...domain import InsertDeliverableEntity
 from ...infrastructure import DeliverablesRepository
 
 
 class CreateDeliverableCommandHandler(CommandHandler[CreateDeliverableCommand, Created]):
-    def __init__(self,
-                 deliverable_repository: DeliverablesRepository = Depends(),
-                 firebase_provider: FirebaseProvider = Depends()):
+    def __init__(self, deliverable_repository: DeliverablesRepository = Depends()):
         self._deliverable_repository = deliverable_repository
-        self._firebase_provider = firebase_provider
 
     async def handle(self, command: CreateDeliverableCommand) -> Result[Created]:
-        deliverable_file_name = f"{command.project}/{command.identifier}.{command.file.filename.split('.')[-1]}"
-        deliverable_url = await self._firebase_provider.upload_file(deliverable_file_name, command.file)
-
         deliverable = InsertDeliverableEntity(
-            type=command.type,
-            name=command.name,
-            url=deliverable_url,
-            description=command.description
+            project_id=command.project,
+            type_id=command.type,
+            deliverable_id=str(uuid.uuid4()),
+            deliverable_name=command.name,
+            deliverable_url=command.url,
+            deliverable_description=command.description
         )
 
-        await self._deliverable_repository.insert_deliverable(deliverable)
+        await self._deliverable_repository.insert_entity(deliverable)
 
-        return Result.success(Created(data=deliverable.dict()))
+        return Result.success(Created())

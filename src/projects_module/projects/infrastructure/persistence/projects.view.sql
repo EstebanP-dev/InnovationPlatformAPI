@@ -12,13 +12,14 @@ CREATE VIEW vw_projects AS
         p.updated_at
     FROM
         projects p
-    INNER JOIN project_types pt ON p.fk_type = pt.id
-    INNER JOIN project_deliverables pd ON p.id = pd.fk_project
-    INNER JOIN deliverable_types dt ON pd.fk_type = dt.id
-    INNER JOIN project_assessors ps ON p.fk_assessor = ps.id
-    INNER JOIN members m ON ps.id = m.id
-    INNER JOIN project_authors pa ON p.id = pa.fk_project
-    INNER JOIN members ma ON pa.fk_author = ma.id
+    RIGHT JOIN project_types pt ON p.fk_type = pt.id
+    LEFT JOIN project_deliverables pd ON p.id = pd.fk_project
+    LEFT JOIN deliverable_types dt ON pd.fk_type = dt.id
+    RIGHT JOIN project_assessors ps ON p.fk_assessor = ps.id
+    RIGHT JOIN members m ON ps.id = m.id
+    RIGHT JOIN project_authors pa ON p.id = pa.fk_project
+    LEFT JOIN members ma ON pa.fk_author = ma.id
+    WHERE p.active = TRUE
     GROUP BY
         p.id;
 

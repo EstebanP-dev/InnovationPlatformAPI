@@ -7,4 +7,4 @@ class DeliverablesRepository(Repository):
 
     @property
     def __table_name__(self):
-        return 'project_deliverables'
+        return 'project_deliverables', 'project_deliverable'

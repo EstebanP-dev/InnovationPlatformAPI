@@ -14,10 +14,11 @@ class DeleteProjectCommandHandler(CommandHandler[DeleteProjectCommand, Deleted])
 
     async def handle(self, command: DeleteProjectCommand) -> Result[Deleted]:
         result = await self._repository.delete_entity({
-            'project_id': command.project_id
+            'project_id': command.project_id,
+            'force_delete': command.force,
         })
 
         if not result:
             return Result.failure(Error.unexpected('Could not delete project'))
 
-        return Result.success(result)
+        return Result.success(Deleted())

@@ -9,5 +9,6 @@ class CreateProjectCommand(BaseModel):
     type: str = Field(..., pattern=UUID_REGEX)
     title: str = Field(..., max_length=255, min_length=5)
     description: Optional[str] = Field(max_length=255, min_length=5)
+    folder: Optional[str] = Field(..., pattern=UUID_REGEX)
     authors: List[str] = Field(..., min_items=1, max_items=2)
     status: ProjectStatusEnum = Field(...)

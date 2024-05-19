@@ -4,8 +4,7 @@ from typing import Optional
 
 
 class CreateDeliverableRequest(BaseModel):
-    project: Optional[str] = Field(None, description="Project of deliverable")
     type: Optional[str] = Field(None, description="Type of deliverable")
     name: Optional[str] = Field(None, description="Name of deliverable")
-    identifier: Optional[str] = Field(None, description="Identifier of deliverable")
+    url: Optional[str] = Field(None, description="URL of deliverable")
     description: Optional[str] = Field(None, description="Description of deliverable")

@@ -13,9 +13,8 @@ deliverables_router = APIRouter(prefix="/{project_id}/deliverables")
 async def create_deliverable(
         request: CreateDeliverableRequest,
         project_id: str = Path(..., description="The ID of the project"),
-        file: UploadFile = File(..., description="The file to upload"),
         handler: CreateDeliverableCommandHandler = Depends()):
-    command = CreateDeliverableCommand(**request, project=project_id, file=file)
+    command = CreateDeliverableCommand(**request.model_dump(), project=project_id)
 
     result = await handler.handle(command)
 

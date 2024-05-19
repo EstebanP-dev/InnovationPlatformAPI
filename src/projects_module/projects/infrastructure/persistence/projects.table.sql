@@ -6,6 +6,7 @@ CREATE TABLE projects (
     title VARCHAR(255) NOT NULL UNIQUE,
     normalized_title VARCHAR(255) NOT NULL UNIQUE,
     description TEXT NOT NULL,
+    deliverable_folder_id CHAR(36),
     active BIT DEFAULT 1,
     created_at DATETIME NOT NULL,
     created_by VARCHAR(50) NOT NULL,

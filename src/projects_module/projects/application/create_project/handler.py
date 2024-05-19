@@ -3,8 +3,7 @@ import uuid
 from src.shared import (Depends,
                         CommandHandler,
                         Result,
-                        Error,
-                        FirebaseProvider)
+                        Error)
 from .command import CreateProjectCommand
 from ...domain import ProjectEntity
 from ...infrastructure import ProjectsRepository
@@ -29,6 +28,7 @@ class CreateProjectCommandHandler(CommandHandler[CreateProjectCommand, str]):
             project_type_id=command.type,
             project_title=command.title,
             project_description=command.description,
+            project_deliverable_folder_id=command.folder,
             project_status=command.status,
             authors_str=authors_str
         )
@@ -37,4 +37,4 @@ class CreateProjectCommandHandler(CommandHandler[CreateProjectCommand, str]):
         if not result:
             return Result.failure(Error.unexpected('Could not create project'))
 
-        return Result.success(result)
+        return Result.success(result[0].get('project_id'))

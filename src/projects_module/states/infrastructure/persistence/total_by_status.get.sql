@@ -10,17 +10,18 @@ BEGIN
     WHERE fk_user = user_id;
 
     IF user_role = '26da04bb-fab9-11ee-94e0-0242ac110002' THEN
-        SELECT COUNT(*) INTO total_projects FROM projects;
+        SELECT COUNT(*) INTO total_projects FROM projects WHERE active = TRUE;
 
         SELECT status, COUNT(*) as total, MAX(created_at) as last_created
         FROM projects
+        WHERE active = TRUE
         GROUP BY status;
     ELSE
-        SELECT COUNT(*) INTO total_projects FROM projects WHERE fk_assessor = user_id;
+        SELECT COUNT(*) INTO total_projects FROM projects WHERE fk_assessor = user_id AND active = TRUE;
 
         SELECT status, COUNT(*) as total, MAX(created_at) as last_created
         FROM projects
-        WHERE fk_assessor = user_id
+        WHERE fk_assessor = user_id AND active = TRUE
         GROUP BY status;
     END IF;
 END//
