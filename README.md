@@ -31,6 +31,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES=60
 WEB_ORIGIN=http://localhost:8080
 ```
 
+Tener en cuenta que los valores de `MYSQL_USERNAME`, `MYSQL_PASSWORD`, `MYSQL_HOST`, `MYSQL_PORT` y `MYSQL_DATABASE` deben coincidir con los valores de las variables de entorno del archivo `docker-compose.yml`. Es decir, si cambias los valores de las variables de entorno en el archivo `docker-compose.yml`, también debes cambiar los valores correspondientes en el archivo `.env`. Por otro lado, el `MYSQL_HOST` debe ser el nombre del servicio de la base de datos en el archivo `docker-compose.yml`.
+
 ### 3. Construir y ejecutar los contenedores
 
 ```bash
@@ -64,7 +66,7 @@ pip install -r requirements.txt
 ## Archivos importantes:
 
 - `create_database.sql`: Contiene las sentencias SQL para crear la estructura de la base de datos..
-- `test_data.sql`: Contiene datos de prueba para poblar la base de datos.
+- `test_data.sql`: Contiene datos de prueba para poblar la base de datos. Tener en cuenta que estos datos fueron realizados para una prueba local. Por temas de `SECRET_KEY`, las contraseñas de los usuarios, no podrán ser verificadas en la API.
 
 ## Comandos útiles
 
