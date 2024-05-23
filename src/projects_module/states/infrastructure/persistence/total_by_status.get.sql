@@ -17,11 +17,15 @@ BEGIN
         WHERE active = TRUE
         GROUP BY status;
     ELSE
-        SELECT COUNT(*) INTO total_projects FROM projects WHERE fk_assessor = user_id AND active = TRUE;
+        SELECT COUNT(*) INTO total_projects
+        FROM projects
+        WHERE active = TRUE
+          AND (fk_assessor = user_id OR EXISTS (SELECT 1 FROM project_authors WHERE fk_project = projects.id AND fk_author = user_id));
 
         SELECT status, COUNT(*) as total, MAX(created_at) as last_created
         FROM projects
-        WHERE fk_assessor = user_id AND active = TRUE
+        WHERE active = TRUE
+          AND (fk_assessor = user_id OR EXISTS (SELECT 1 FROM project_authors WHERE fk_project = projects.id AND fk_author = user_id))
         GROUP BY status;
     END IF;
 END//

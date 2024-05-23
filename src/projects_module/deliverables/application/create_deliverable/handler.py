@@ -16,6 +16,7 @@ class CreateDeliverableCommandHandler(CommandHandler[CreateDeliverableCommand, C
             project_id=command.project,
             type_id=command.type,
             deliverable_id=str(uuid.uuid4()),
+            deliverable_status=command.status,
             deliverable_name=command.name,
             deliverable_url=command.url,
             deliverable_description=command.description

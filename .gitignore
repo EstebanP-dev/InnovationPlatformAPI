@@ -6,3 +6,4 @@
 /.run/
 http-client.private.env.json
 /db/
+/innp-api.pem

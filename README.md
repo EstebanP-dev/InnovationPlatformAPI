@@ -48,7 +48,7 @@ Esto levantará dos servicios:
 Para crear las tablas y poblar la base de datos con datos de prueba, ejecuta los siguientes comandos:
 
 ```bash
-docker exec -i innovation-platform-db mysql -uroot -proot innovation-platform < create_database.sql
+docker exec -i INNP.Database mysql -u root -proot innovation_platform < /create_db.sql
 docker exec -i innovation-platform-db mysql -uroot -proot innovation-platform < test_data.sql
 ```
 

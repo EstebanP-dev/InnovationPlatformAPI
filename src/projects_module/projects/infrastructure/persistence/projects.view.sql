@@ -6,7 +6,7 @@ CREATE VIEW vw_projects AS
         p.description,
         pt.name AS type,
         JSON_OBJECT('id', m.id, 'full_name', CONCAT(m.given_name, ' ', m.family_name)) AS assessor,
-        COALESCE(JSON_ARRAYAGG(JSON_OBJECT('type', dt.name, 'name', pd.name, 'url', pd.url, 'description', pd.description, 'created_at', pd.created_at, 'updated_at', pd.updated_at)), '[]') AS deliverables,
+        COALESCE(JSON_ARRAYAGG(JSON_OBJECT('id', pd.id, 'type', dt.name, 'status', pd.status, 'name', pd.name, 'url', pd.url, 'description', pd.description, 'created_at', pd.created_at, 'updated_at', pd.updated_at)), '[]') AS deliverables,
         COALESCE(JSON_ARRAYAGG(JSON_OBJECT('id', pa.id, 'full_name', CONCAT(ma.given_name, ' ', ma.family_name))), '[]') AS authors,
         p.created_at,
         p.updated_at

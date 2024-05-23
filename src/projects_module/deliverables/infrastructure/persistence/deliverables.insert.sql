@@ -4,6 +4,7 @@ CREATE PROCEDURE sp_insert_project_deliverable(
     IN project_id CHAR(36),
     IN type_id CHAR(36),
     IN deliverable_id CHAR(36),
+    IN deliverable_status ENUM('Pending', 'Reviewing', 'Approved', 'Rejected'),
     IN deliverable_name VARCHAR(255),
     IN deliverable_description TEXT,
     IN deliverable_url LONGTEXT
@@ -41,8 +42,8 @@ BEGIN
 
     START TRANSACTION;
 
-    INSERT INTO project_deliverables (id, fk_type, fk_project, name, normalized_name, url, description, created_at, created_by)
-    VALUES (deliverable_id, type_id, project_id, deliverable_name, normalize_text(deliverable_name, true), deliverable_url, deliverable_description, NOW(), USER());
+    INSERT INTO project_deliverables (id, status, fk_type, fk_project, name, normalized_name, url, description, created_at, created_by)
+    VALUES (deliverable_id, deliverable_status, type_id, project_id, deliverable_name, normalize_text(deliverable_name, true), deliverable_url, deliverable_description, NOW(), USER());
 
     COMMIT;
 

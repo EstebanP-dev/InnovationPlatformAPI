@@ -11,9 +11,11 @@ class ProjectMembersResponse(BaseModel):
 
 
 class ProjectDeliverableResponse(BaseModel):
+    id: Optional[str] = None
     url: Optional[str] = None
     name: Optional[str] = None
     type: Optional[str] = None
+    status: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

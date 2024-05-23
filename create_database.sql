@@ -46,23 +46,6 @@ create table if not exists countries
         unique (zip_code)
 );
 
-create table if not exists deliverable_states
-(
-    id             char(36)         not null
-        primary key,
-    name           varchar(60)      not null,
-    normalize_name varchar(60)      not null,
-    active         bit default b'1' null,
-    created_at     datetime         not null,
-    created_by     varchar(50)      not null,
-    updated_at     datetime         null,
-    updated_by     varchar(50)      null,
-    constraint name
-        unique (name),
-    constraint normalize_name
-        unique (normalize_name)
-);
-
 create table if not exists deliverable_types
 (
     id             char(36)         not null
@@ -239,6 +222,7 @@ create table if not exists project_deliverables
 (
     id              char(36)                                                not null
         primary key,
+    status          enum('Pending', 'Reviewing', 'Approved', 'Reject')      DEFAULT 'Pending',
     fk_type         char(36)                                                not null,
     fk_project      char(36)                                                not null,
     name            varchar(255)                                            not null,
@@ -254,9 +238,7 @@ create table if not exists project_deliverables
     constraint project_deliverables_ibfk_1
         foreign key (fk_type) references deliverable_types (id),
     constraint project_deliverables_ibfk_2
-        foreign key (fk_project) references projects (id),
-    constraint project_deliverables_ibfk_3
-        foreign key (fk_state) references deliverable_states (id)
+        foreign key (fk_project) references projects (id)
 );
 
 create index fk_project
@@ -662,15 +644,13 @@ BEGIN
     SELECT 1;
 END;
 
-create
-    definer = root@`%` procedure sp_exist_user_by_uniques(IN field varchar(255), OUT password_hash varchar(255))
+CREATE DEFINER = root@`%` PROCEDURE sp_exist_user_by_uniques(IN field varchar(255), OUT password_hash varchar(255))
 BEGIN
     DECLARE user_exists INT;
     DECLARE password_hash_temp VARCHAR(255);
 
     SELECT 1, u.password_hash INTO user_exists, password_hash_temp
     FROM users u
-             USE INDEX (`PRIMARY`, code, document_number, email, phone_number, user_name)
     WHERE u.id = field OR u.email = field OR u.user_name = field OR u.code = field
        OR u.document_number = field OR u.phone_number = field;
 
@@ -679,14 +659,12 @@ BEGIN
     SELECT user_exists;
 END;
 
-create
-    definer = root@`%` procedure sp_exists_deliverable_type(IN deliverable_type_id char(36))
+CREATE DEFINER = root@`%` PROCEDURE sp_exists_deliverable_type(IN deliverable_type_id char(36))
 BEGIN
     SELECT EXISTS(SELECT 1 FROM deliverable_types WHERE id = deliverable_type_id);
 END;
 
-create
-    definer = root@`%` procedure sp_get_project(IN project_id char(36))
+CREATE DEFINER = root@`%` PROCEDURE sp_get_project(IN project_id char(36))
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
         BEGIN
@@ -703,10 +681,9 @@ BEGIN
     WHERE id = project_id;
 END;
 
-create
-    definer = root@`%` procedure sp_get_projects(IN user_id char(36))
-BEGIN
 
+CREATE DEFINER = root@`%` PROCEDURE sp_get_projects(IN user_id char(36))
+BEGIN
     DECLARE is_admin BOOLEAN;
     SET is_admin = EXISTS(SELECT 1 FROM user_roles WHERE fk_user = user_id AND fk_role = '26da04bb-fab9-11ee-94e0-0242ac110002');
 
@@ -718,25 +695,19 @@ BEGIN
         pt.name AS type,
         JSON_OBJECT('id', m.id, 'full_name', CONCAT(m.given_name, ' ', m.family_name)) AS assessor,
         COALESCE(JSON_ARRAYAGG(JSON_OBJECT('type', dt.name, 'name', pd.name, 'url', pd.url, 'description', pd.description, 'created_at', pd.created_at, 'updated_at', pd.updated_at)), '[]') AS deliverables,
-        COALESCE(JSON_ARRAYAGG(JSON_OBJECT('id', pa.id, 'full_name', CONCAT(ma.given_name, ' ', ma.family_name))), '[]') AS authors,
-        p.created_at,
-        p.updated_at
-    FROM
-        projects p
-            RIGHT JOIN project_types pt ON p.fk_type = pt.id
-            LEFT JOIN project_deliverables pd ON p.id = pd.fk_project
-            LEFT JOIN deliverable_types dt ON pd.fk_type = dt.id
-            RIGHT JOIN project_assessors ps ON p.fk_assessor = ps.id
-            RIGHT JOIN members m ON ps.id = m.id
-            RIGHT JOIN project_authors pa ON p.id = pa.fk_project
-            LEFT JOIN members ma ON pa.fk_author = ma.id
-    WHERE
-        p.active = TRUE AND
-        (is_admin OR m.id = user_id OR ma.id = user_id)
-    GROUP BY
-        p.id;
-
+        COALESCE(JSON_ARRAYAGG(JSON_OBJECT('id', pa.id, 'full_name', CONCAT(ma.given_name, ' ', ma.family_name))), '[]') AS autho
+    FROM projects p
+             JOIN project_types pt ON p.project_type_id = pt.id
+             LEFT JOIN members m ON p.assessor_id = m.id
+             LEFT JOIN deliverables d ON p.id = d.project_id
+             LEFT JOIN deliverable_types dt ON d.deliverable_type_id = dt.id
+             LEFT JOIN project_authors pa ON p.id = pa.project_id
+             LEFT JOIN members ma ON pa.author_id = ma.id
+    WHERE p.user_id = user_id OR is_admin
+    GROUP BY p.id;
 END;
+
+
 
 create
     definer = root@`%` procedure sp_get_total_by_status(IN user_id char(36), OUT total_projects int)
@@ -1092,10 +1063,3 @@ select `innovation_platform`.`vw_member_information`.`id`            AS `id`,
 from `innovation_platform`.`vw_member_information`
 where ((not ((`innovation_platform`.`vw_member_information`.`role_name` like '%Assessor%'))) and
        (not ((`innovation_platform`.`vw_member_information`.`role_name` like '%Admin%'))));
-
-create definer = root@`%` view vw_deliverable_states as
-select `innovation_platform`.`deliverable_states`.`id`             AS `id`,
-       `innovation_platform`.`deliverable_states`.`name`           AS `name`,
-       `innovation_platform`.`deliverable_states`.`normalize_name` AS `normalize_name`
-from `innovation_platform`.`deliverable_states`
-where (`innovation_platform`.`deliverable_states`.`active` = 1);
