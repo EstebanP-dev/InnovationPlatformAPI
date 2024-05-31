@@ -55,7 +55,7 @@ class Repository(ABC):
         _, singular_table_name = self.__table_name__
         return await self.execute_stored_procedure_from_model(
             f'{self._update_template_name}{singular_table_name}',
-            entity.model_dump())
+            entity)
 
     async def execute_stored_procedure_from_model(self, sp_name: str, model: Any):
         model_properties = [prop for prop in model.model_dump()

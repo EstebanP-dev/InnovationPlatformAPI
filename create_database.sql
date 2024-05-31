@@ -138,23 +138,6 @@ create table if not exists project_assessors
         foreign key (id) references members (id)
 );
 
-create table if not exists project_states
-(
-    id             char(36)         not null
-        primary key,
-    name           varchar(60)      not null,
-    normalize_name varchar(60)      not null,
-    active         bit default b'1' null,
-    created_at     datetime         not null,
-    created_by     varchar(50)      not null,
-    updated_at     datetime         null,
-    updated_by     varchar(50)      null,
-    constraint name
-        unique (name),
-    constraint normalize_name
-        unique (normalize_name)
-);
-
 create table if not exists project_types
 (
     id             char(36)         not null
@@ -220,21 +203,20 @@ create index fk_project
 
 create table if not exists project_deliverables
 (
-    id              char(36)                                                not null
+    id              char(36)                                                                not null
         primary key,
-    status          enum('Pending', 'Reviewing', 'Approved', 'Reject')      DEFAULT 'Pending',
-    fk_type         char(36)                                                not null,
-    fk_project      char(36)                                                not null,
-    name            varchar(255)                                            not null,
-    normalized_name varchar(255)                                            not null,
-    url             longtext                                                not null,
-    description     text                                                    null,
-    active          bit      default b'1'                                   null,
-    created_at      datetime                                                not null,
-    created_by      varchar(50)                                             not null,
-    updated_at      datetime                                                null,
-    updated_by      varchar(50)                                             null,
-    fk_state        char(36) default 'd9016122-0c13-11ef-bd8a-0242ac110002' not null,
+    status          enum ('Pending', 'Reviewing', 'Approved', 'Rejected') default 'Pending' null,
+    fk_type         char(36)                                                                not null,
+    fk_project      char(36)                                                                not null,
+    name            varchar(255)                                                            not null,
+    normalized_name varchar(255)                                                            not null,
+    url             longtext                                                                not null,
+    description     text                                                                    null,
+    active          bit                                                   default b'1'      null,
+    created_at      datetime                                                                not null,
+    created_by      varchar(50)                                                             not null,
+    updated_at      datetime                                                                null,
+    updated_by      varchar(50)                                                             null,
     constraint project_deliverables_ibfk_1
         foreign key (fk_type) references deliverable_types (id),
     constraint project_deliverables_ibfk_2
@@ -243,9 +225,6 @@ create table if not exists project_deliverables
 
 create index fk_project
     on project_deliverables (fk_project);
-
-create index fk_state
-    on project_deliverables (fk_state);
 
 create index fk_type
     on project_deliverables (fk_type);
@@ -416,6 +395,37 @@ create index fk_user
 create index fk_branch
     on users (fk_branch);
 
+create definer = root@`%` view vw_assessor_members as
+select `innovation_platform`.`vw_member_information`.`id`            AS `id`,
+       `innovation_platform`.`vw_member_information`.`code`          AS `code`,
+       `innovation_platform`.`vw_member_information`.`user_name`     AS `user_name`,
+       `innovation_platform`.`vw_member_information`.`email`         AS `email`,
+       `innovation_platform`.`vw_member_information`.`phone_number`  AS `phone_number`,
+       `innovation_platform`.`vw_member_information`.`role_name`     AS `role_name`,
+       `innovation_platform`.`vw_member_information`.`given_name`    AS `given_name`,
+       `innovation_platform`.`vw_member_information`.`family_name`   AS `family_name`,
+       `innovation_platform`.`vw_member_information`.`birth_date`    AS `birth_date`,
+       `innovation_platform`.`vw_member_information`.`document_type` AS `document_type`,
+       `innovation_platform`.`vw_member_information`.`gender`        AS `gender`
+from `innovation_platform`.`vw_member_information`
+where (`innovation_platform`.`vw_member_information`.`role_name` like '%Assessor%');
+
+create definer = root@`%` view vw_authorial_members as
+select `innovation_platform`.`vw_member_information`.`id`            AS `id`,
+       `innovation_platform`.`vw_member_information`.`code`          AS `code`,
+       `innovation_platform`.`vw_member_information`.`user_name`     AS `user_name`,
+       `innovation_platform`.`vw_member_information`.`email`         AS `email`,
+       `innovation_platform`.`vw_member_information`.`phone_number`  AS `phone_number`,
+       `innovation_platform`.`vw_member_information`.`role_name`     AS `role_name`,
+       `innovation_platform`.`vw_member_information`.`given_name`    AS `given_name`,
+       `innovation_platform`.`vw_member_information`.`family_name`   AS `family_name`,
+       `innovation_platform`.`vw_member_information`.`birth_date`    AS `birth_date`,
+       `innovation_platform`.`vw_member_information`.`document_type` AS `document_type`,
+       `innovation_platform`.`vw_member_information`.`gender`        AS `gender`
+from `innovation_platform`.`vw_member_information`
+where ((not ((`innovation_platform`.`vw_member_information`.`role_name` like '%Assessor%'))) and
+       (not ((`innovation_platform`.`vw_member_information`.`role_name` like '%Admin%'))));
+
 create definer = root@`%` view vw_member_information as
 select `u`.`id`              AS `id`,
        `u`.`code`            AS `code`,
@@ -434,7 +444,8 @@ from (((((`innovation_platform`.`user_roles` `ur` join `innovation_platform`.`ro
           on ((`ur`.`fk_role` = `r`.`id`))) join `innovation_platform`.`users` `u`
          on ((`ur`.`fk_user` = `u`.`id`))) join `innovation_platform`.`members` `m`
         on ((`u`.`id` = `m`.`id`))) join `innovation_platform`.`document_types` `dt`
-       on ((`m`.`fk_document_type` = `dt`.`id`))) join `innovation_platform`.`genders` `g` on ((`m`.`fk_gender` = `g`.`id`)));
+       on ((`m`.`fk_document_type` = `dt`.`id`))) join `innovation_platform`.`genders` `g`
+      on ((`m`.`fk_gender` = `g`.`id`)));
 
 create definer = root@`%` view vw_project_deliverable_types as
 select `innovation_platform`.`deliverable_types`.`id`        AS `id`,
@@ -449,26 +460,30 @@ from `innovation_platform`.`project_types`
 where (`innovation_platform`.`project_types`.`active` = 1);
 
 create definer = root@`%` view vw_projects as
-select `p`.`id`                                                                                       AS `id`,
-       `p`.`status`                                                                                   AS `status`,
-       `p`.`title`                                                                                    AS `title`,
-       `p`.`description`                                                                              AS `description`,
-       `pt`.`name`                                                                                    AS `type`,
-       json_object('id', `m`.`id`, 'full_name', concat(`m`.`given_name`, ' ', `m`.`family_name`))     AS `assessor`,
-       coalesce(json_arrayagg(json_object('type', `dt`.`name`, 'name', `pd`.`name`, 'url', `pd`.`url`, 'description',
-                                          `pd`.`description`, 'created_at', `pd`.`created_at`, 'updated_at',
-                                          `pd`.`updated_at`)), '[]')                                  AS `deliverables`,
+select `p`.`id`                                                                                                     AS `id`,
+       `p`.`status`                                                                                                 AS `status`,
+       `p`.`title`                                                                                                  AS `title`,
+       `p`.`description`                                                                                            AS `description`,
+       `pt`.`name`                                                                                                  AS `type`,
+       json_object('id', `m`.`id`, 'full_name',
+                   concat(`m`.`given_name`, ' ', `m`.`family_name`))                                                AS `assessor`,
+       coalesce(json_arrayagg(json_object('id', `pd`.`id`, 'type', `dt`.`name`, 'status', `pd`.`status`, 'name',
+                                          `pd`.`name`, 'url', `pd`.`url`, 'description', `pd`.`description`,
+                                          'created_at', `pd`.`created_at`, 'updated_at', `pd`.`updated_at`)),
+                '[]')                                                                                               AS `deliverables`,
        coalesce(json_arrayagg(json_object('id', `pa`.`id`, 'full_name',
-                                          concat(`ma`.`given_name`, ' ', `ma`.`family_name`))), '[]') AS `authors`,
-       `p`.`created_at`                                                                               AS `created_at`,
-       `p`.`updated_at`                                                                               AS `updated_at`
+                                          concat(`ma`.`given_name`, ' ', `ma`.`family_name`))),
+                '[]')                                                                                               AS `authors`,
+       `p`.`created_at`                                                                                             AS `created_at`,
+       `p`.`updated_at`                                                                                             AS `updated_at`
 from ((`innovation_platform`.`project_authors` `pa` left join (`innovation_platform`.`members` `m` left join (`innovation_platform`.`project_assessors` `ps` left join (((`innovation_platform`.`project_types` `pt` left join `innovation_platform`.`projects` `p`
                                                                                                                                                                           on ((`p`.`fk_type` = `pt`.`id`))) left join `innovation_platform`.`project_deliverables` `pd`
                                                                                                                                                                          on ((`p`.`id` = `pd`.`fk_project`))) left join `innovation_platform`.`deliverable_types` `dt`
                                                                                                                                                                         on ((`pd`.`fk_type` = `dt`.`id`)))
                                                                                                               on ((`p`.`fk_assessor` = `ps`.`id`)))
                                                                on ((`ps`.`id` = `m`.`id`)))
-       on ((`p`.`id` = `pa`.`fk_project`))) left join `innovation_platform`.`members` `ma` on ((`pa`.`fk_author` = `ma`.`id`)))
+       on ((`p`.`id` = `pa`.`fk_project`))) left join `innovation_platform`.`members` `ma`
+      on ((`pa`.`fk_author` = `ma`.`id`)))
 where (`p`.`active` = true)
 group by `p`.`id`;
 
@@ -598,6 +613,36 @@ BEGIN
 END;
 
 create
+    definer = root@`%` procedure sp_change_project_deliverable_status(IN deliverable_id char(36),
+                                                                      IN deliverable_status enum ('Pending', 'Reviewing', 'Approved', 'Rejected'))
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+        BEGIN
+            ROLLBACK;
+            RESIGNAL;
+        END;
+
+    IF NOT is_valid_uuid(deliverable_id) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid deliverable_id format';
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM project_deliverables WHERE id = deliverable_id) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Deliverable does not exist';
+    END IF;
+
+    START TRANSACTION;
+
+    UPDATE project_deliverables
+    SET status = deliverable_status
+    WHERE id = deliverable_id;
+
+    COMMIT;
+
+    SELECT 1;
+
+END;
+
+create
     definer = root@`%` procedure sp_delete_project(IN project_id char(36), IN force_delete tinyint(1))
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -644,13 +689,15 @@ BEGIN
     SELECT 1;
 END;
 
-CREATE DEFINER = root@`%` PROCEDURE sp_exist_user_by_uniques(IN field varchar(255), OUT password_hash varchar(255))
+create
+    definer = root@`%` procedure sp_exist_user_by_uniques(IN field varchar(255), OUT password_hash varchar(255))
 BEGIN
     DECLARE user_exists INT;
     DECLARE password_hash_temp VARCHAR(255);
 
     SELECT 1, u.password_hash INTO user_exists, password_hash_temp
     FROM users u
+             USE INDEX (`PRIMARY`, code, document_number, email, phone_number, user_name)
     WHERE u.id = field OR u.email = field OR u.user_name = field OR u.code = field
        OR u.document_number = field OR u.phone_number = field;
 
@@ -659,12 +706,14 @@ BEGIN
     SELECT user_exists;
 END;
 
-CREATE DEFINER = root@`%` PROCEDURE sp_exists_deliverable_type(IN deliverable_type_id char(36))
+create
+    definer = root@`%` procedure sp_exists_deliverable_type(IN deliverable_type_id char(36))
 BEGIN
     SELECT EXISTS(SELECT 1 FROM deliverable_types WHERE id = deliverable_type_id);
 END;
 
-CREATE DEFINER = root@`%` PROCEDURE sp_get_project(IN project_id char(36))
+create
+    definer = root@`%` procedure sp_get_project(IN project_id char(36))
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
         BEGIN
@@ -681,9 +730,10 @@ BEGIN
     WHERE id = project_id;
 END;
 
-
-CREATE DEFINER = root@`%` PROCEDURE sp_get_projects(IN user_id char(36))
+create
+    definer = root@`%` procedure sp_get_projects(IN user_id char(36))
 BEGIN
+
     DECLARE is_admin BOOLEAN;
     SET is_admin = EXISTS(SELECT 1 FROM user_roles WHERE fk_user = user_id AND fk_role = '26da04bb-fab9-11ee-94e0-0242ac110002');
 
@@ -694,20 +744,26 @@ BEGIN
         p.description,
         pt.name AS type,
         JSON_OBJECT('id', m.id, 'full_name', CONCAT(m.given_name, ' ', m.family_name)) AS assessor,
-        COALESCE(JSON_ARRAYAGG(JSON_OBJECT('type', dt.name, 'name', pd.name, 'url', pd.url, 'description', pd.description, 'created_at', pd.created_at, 'updated_at', pd.updated_at)), '[]') AS deliverables,
-        COALESCE(JSON_ARRAYAGG(JSON_OBJECT('id', pa.id, 'full_name', CONCAT(ma.given_name, ' ', ma.family_name))), '[]') AS autho
-    FROM projects p
-             JOIN project_types pt ON p.project_type_id = pt.id
-             LEFT JOIN members m ON p.assessor_id = m.id
-             LEFT JOIN deliverables d ON p.id = d.project_id
-             LEFT JOIN deliverable_types dt ON d.deliverable_type_id = dt.id
-             LEFT JOIN project_authors pa ON p.id = pa.project_id
-             LEFT JOIN members ma ON pa.author_id = ma.id
-    WHERE p.user_id = user_id OR is_admin
-    GROUP BY p.id;
+        COALESCE(JSON_ARRAYAGG(JSON_OBJECT('id', pd.id, 'type', dt.name, 'status', pd.status, 'name', pd.name, 'url', pd.url, 'description', pd.description, 'created_at', pd.created_at, 'updated_at', pd.updated_at)), '[]') AS deliverables,
+        COALESCE(JSON_ARRAYAGG(JSON_OBJECT('id', pa.id, 'full_name', CONCAT(ma.given_name, ' ', ma.family_name))), '[]') AS authors,
+        p.created_at,
+        p.updated_at
+    FROM
+        projects p
+    RIGHT JOIN project_types pt ON p.fk_type = pt.id
+    LEFT JOIN project_deliverables pd ON p.id = pd.fk_project
+    LEFT JOIN deliverable_types dt ON pd.fk_type = dt.id
+    RIGHT JOIN project_assessors ps ON p.fk_assessor = ps.id
+    RIGHT JOIN members m ON ps.id = m.id
+    RIGHT JOIN project_authors pa ON p.id = pa.fk_project
+    LEFT JOIN members ma ON pa.fk_author = ma.id
+    WHERE
+        p.active = TRUE AND
+        (is_admin OR m.id = user_id OR ma.id = user_id)
+    GROUP BY
+        p.id;
+
 END;
-
-
 
 create
     definer = root@`%` procedure sp_get_total_by_status(IN user_id char(36), OUT total_projects int)
@@ -726,11 +782,15 @@ BEGIN
         WHERE active = TRUE
         GROUP BY status;
     ELSE
-        SELECT COUNT(*) INTO total_projects FROM projects WHERE fk_assessor = user_id AND active = TRUE;
+        SELECT COUNT(*) INTO total_projects
+        FROM projects
+        WHERE active = TRUE
+          AND (fk_assessor = user_id OR EXISTS (SELECT 1 FROM project_authors WHERE fk_project = projects.id AND fk_author = user_id));
 
         SELECT status, COUNT(*) as total, MAX(created_at) as last_created
         FROM projects
-        WHERE fk_assessor = user_id AND active = TRUE
+        WHERE active = TRUE
+          AND (fk_assessor = user_id OR EXISTS (SELECT 1 FROM project_authors WHERE fk_project = projects.id AND fk_author = user_id))
         GROUP BY status;
     END IF;
 END;
@@ -815,6 +875,7 @@ END;
 create
     definer = root@`%` procedure sp_insert_project_deliverable(IN project_id char(36), IN type_id char(36),
                                                                IN deliverable_id char(36),
+                                                               IN deliverable_status enum ('Pending', 'Reviewing', 'Approved', 'Rejected'),
                                                                IN deliverable_name varchar(255),
                                                                IN deliverable_description text,
                                                                IN deliverable_url longtext)
@@ -851,8 +912,8 @@ BEGIN
 
     START TRANSACTION;
 
-    INSERT INTO project_deliverables (id, fk_type, fk_project, name, normalized_name, url, description, created_at, created_by)
-    VALUES (deliverable_id, type_id, project_id, deliverable_name, normalize_text(deliverable_name, true), deliverable_url, deliverable_description, NOW(), USER());
+    INSERT INTO project_deliverables (id, status, fk_type, fk_project, name, normalized_name, url, description, created_at, created_by)
+    VALUES (deliverable_id, deliverable_status, type_id, project_id, deliverable_name, normalize_text(deliverable_name, true), deliverable_url, deliverable_description, NOW(), USER());
 
     COMMIT;
 
@@ -933,18 +994,11 @@ create
                                                    IN project_type_id char(36), IN project_title varchar(255),
                                                    IN project_description text,
                                                    IN project_status enum ('Completado', 'En Progreso', 'En Espera', 'Pendiente'),
-                                                   IN project_authors_str text, IN project_deliverables_str text)
+                                                   IN project_authors_str text)
 BEGIN
     DECLARE i INT DEFAULT 0;
     DECLARE autor_id CHAR(36);
     DECLARE autor_ids_length INT;
-    DECLARE deliverable_data VARCHAR(1024);
-    DECLARE deliverable_id CHAR(36);
-    DECLARE deliverable_type_id CHAR(36);
-    DECLARE deliverable_name VARCHAR(255);
-    DECLARE deliverable_url VARCHAR(255);
-    DECLARE deliverable_description TEXT;
-    DECLARE deliverable_ids_length INT;
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
         BEGIN
             ROLLBACK;
@@ -961,54 +1015,22 @@ BEGIN
         SET autor_ids_length = LENGTH(project_authors_str) - LENGTH(REPLACE(project_authors_str, ',', '')) + 1;
 
         WHILE i < autor_ids_length DO
-                SET autor_id = SUBSTRING_INDEX(SUBSTRING_INDEX(project_authors_str, ',', i + 1), ',', -1);
+            SET autor_id = SUBSTRING_INDEX(SUBSTRING_INDEX(project_authors_str, ',', i + 1), ',', -1);
 
-                IF NOT is_valid_uuid(autor_id) THEN
-                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid author_id format';
-                END IF;
+            IF NOT is_valid_uuid(autor_id) THEN
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid author_id format';
+            END IF;
 
-                IF NOT EXISTS (SELECT 1 FROM project_authors WHERE fk_author = autor_id AND fk_project = project_id) THEN
-                    DELETE FROM project_authors WHERE fk_author = autor_id AND fk_project = project_id;
-                END IF;
+            IF NOT EXISTS (SELECT 1 FROM project_authors WHERE fk_author = autor_id AND fk_project = project_id) THEN
+                DELETE FROM project_authors WHERE fk_author = autor_id AND fk_project = project_id;
+            END IF;
 
-                SET i = i + 1;
-            END WHILE;
+            SET i = i + 1;
+        END WHILE;
 
         SET i = 0;
     END IF;
 
-    IF project_deliverables_str IS NOT NULL THEN
-        SET deliverable_ids_length = LENGTH(project_deliverables_str) - LENGTH(REPLACE(project_deliverables_str, ',', '')) + 1;
-
-        WHILE i < deliverable_ids_length DO
-                SET deliverable_data = SUBSTRING_INDEX(SUBSTRING_INDEX(project_deliverables_str, ',', i + 1), ',', -1);
-                SET deliverable_id = SUBSTRING_INDEX(deliverable_data, ':', 1);
-                SET deliverable_type_id = SUBSTRING_INDEX(deliverable_data, ':', 2);
-                SET deliverable_name = SUBSTRING_INDEX(SUBSTRING_INDEX(deliverable_data, ':', 3), ':', -1);
-                SET deliverable_url = SUBSTRING_INDEX(SUBSTRING_INDEX(deliverable_data, ':', 4), ':', -1);
-                SET deliverable_description = SUBSTRING_INDEX(deliverable_data, ':', 5);
-
-                IF NOT is_valid_uuid(deliverable_type_id) THEN
-                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid deliverable_type_id format';
-                END IF;
-
-                IF NOT EXISTS (SELECT 1 FROM project_deliverables WHERE fk_project = project_id AND id = deliverable_id) THEN
-                    DELETE FROM project_deliverables WHERE fk_project = project_id AND id = deliverable_id;
-                ELSE
-                    UPDATE project_deliverables
-                    SET fk_type = IFNULL(deliverable_type_id, fk_type),
-                        name = IFNULL(deliverable_name, name),
-                        normalized_name = normalize_text(IFNULL(deliverable_name, name), TRUE),
-                        url = IFNULL(deliverable_url, url),
-                        description = IFNULL(deliverable_description, description),
-                        updated_at = NOW(),
-                        updated_by = USER()
-                    WHERE fk_project = project_id AND id = deliverable_id;
-                END IF;
-
-                SET i = i + 1;
-            END WHILE;
-    END IF;
 
     IF NOT is_valid_uuid(assessor_id) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid assessor_id format';
@@ -1019,47 +1041,52 @@ BEGIN
     END IF;
 
     UPDATE projects
-    SET fk_assessor = IFNULL(assessor_id, fk_assessor),
-        fk_type = IFNULL(project_type_id, fk_type),
-        title = IFNULL(project_title, title),
-        normalized_title = normalize_text(IFNULL(project_title, title), TRUE),
-        description = IFNULL(project_description, description),
-        status = IFNULL(project_status, status),
-        updated_at = NOW(),
-        updated_by = USER()
+        SET fk_assessor = IFNULL(assessor_id, fk_assessor),
+            fk_type = IFNULL(project_type_id, fk_type),
+            title = IFNULL(project_title, title),
+            normalized_title = normalize_text(IFNULL(project_title, title), TRUE),
+            description = IFNULL(project_description, description),
+            status = IFNULL(project_status, status),
+            updated_at = NOW(),
+            updated_by = USER()
     WHERE id = project_id;
+
+    SELECT 1;
 
     COMMIT;
 END;
 
+INSERT INTO innovation_platform.countries (id,name,normalized_name,abbreviation,zip_code,active,created_at,created_by,updated_at,updated_by) VALUES
+    ('dafb2e40-fabb-11ee-94e0-0242ac110002','Colombia','COLOMBIA','CO','57',1,'2024-04-15 00:05:23','root@172.17.0.1',NULL,NULL);
+INSERT INTO innovation_platform.states (id,fk_country,name,normalized_name,abbreviation,active,created_at,created_by,updated_at,updated_by) VALUES
+    ('d41d5018-fadc-11ee-94e0-0242ac110002','dafb2e40-fabb-11ee-94e0-0242ac110002','Antioquia','ANTIOQUIA','ANT',1,'2024-04-15 04:01:25','root@172.17.0.1',NULL,NULL);
+INSERT INTO innovation_platform.cities (id,fk_state,name,normalized_name,abbreviation,active,created_at,created_by,updated_at,updated_by) VALUES
+    ('32a43022-fadd-11ee-94e0-0242ac110002','d41d5018-fadc-11ee-94e0-0242ac110002','Medellín','MEDELLIN','MED',1,'2024-04-15 04:04:03','root@172.17.0.1',NULL,NULL);
+INSERT INTO innovation_platform.countries (id,name,normalized_name,abbreviation,zip_code,active,created_at,created_by,updated_at,updated_by) VALUES
+    ('dafb2e40-fabb-11ee-94e0-0242ac110002','Colombia','COLOMBIA','CO','57',1,'2024-04-15 00:05:23','root@172.17.0.1',NULL,NULL);
+INSERT INTO innovation_platform.branches (id,fk_city,fk_company,name,normalize_name,description,avatar,address,email,phone_number,active,created_at,created_by,updated_at,updated_by) VALUES
+    ('be7ed35e-fadd-11ee-94e0-0242ac110002','32a43022-fadd-11ee-94e0-0242ac110002','6afca21c-fabb-11ee-94e0-0242ac110002','Universidad de San Buenaventura Sede Medellín','UNIVERSIDAD_DE_SAN_BUENAVENTURA_SEDE_MEDELLIN','Universidad de San Buenaventura Sede Medellín','https://www.usbmed.edu.co/wp-content/uploads/2019/07/usbmed-logo.png','Carrera 51D #67B-90','support@usbmed.edu.co','444 44 44',1,'2024-04-15 04:07:58','root@172.17.0.1',NULL,NULL);
+INSERT INTO innovation_platform.document_types (id,abbreviation,name,normalized_name,active,created_at,created_by,updated_at,updated_by) VALUES
+                                                                                                                                             ('14aa126f-faba-11ee-94e0-0242ac110002','CC','Cédula de Ciudadanía','CEDULA_DE_CIUDADANIA',1,'2024-04-14 23:52:41','root@172.17.0.1',NULL,NULL),
+                                                                                                                                             ('14aa209a-faba-11ee-94e0-0242ac110002','CE','Cédula de Extranjería','CEDULA_DE_EXTRANJERIA',1,'2024-04-14 23:52:41','root@172.17.0.1',NULL,NULL),
+                                                                                                                                             ('14aa2204-faba-11ee-94e0-0242ac110002','PA','Pasaporte','PASAPORTE',1,'2024-04-14 23:52:41','root@172.17.0.1',NULL,NULL),
+                                                                                                                                             ('14aa2248-faba-11ee-94e0-0242ac110002','RC','Registro Civil','REGISTRO_CIVIL',1,'2024-04-14 23:52:41','root@172.17.0.1',NULL,NULL),
+                                                                                                                                             ('14aa226c-faba-11ee-94e0-0242ac110002','TI','Tarjeta de Identidad','TARJETA_DE_IDENTIDAD',1,'2024-04-14 23:52:41','root@172.17.0.1',NULL,NULL);
+INSERT INTO innovation_platform.genders (id,abbreviation,name,normalized_name,active,created_at,created_by,updated_at,updated_by) VALUES
+                                                                                                                                      ('698c7f5f-faba-11ee-94e0-0242ac110002','M','Masculino','MASCULINO',1,'2024-04-14 23:55:03','root@172.17.0.1',NULL,NULL),
+                                                                                                                                      ('698c8472-faba-11ee-94e0-0242ac110002','F','Feminino','FEMININO',1,'2024-04-14 23:55:03','root@172.17.0.1',NULL,NULL),
+                                                                                                                                      ('698c8582-faba-11ee-94e0-0242ac110002','O','Otro','OTRO',1,'2024-04-14 23:55:03','root@172.17.0.1',NULL,NULL);
 
-create definer = root@`%` view vw_assessor_members as
-select `innovation_platform`.`vw_member_information`.`id`            AS `id`,
-       `innovation_platform`.`vw_member_information`.`code`          AS `code`,
-       `innovation_platform`.`vw_member_information`.`user_name`     AS `user_name`,
-       `innovation_platform`.`vw_member_information`.`email`         AS `email`,
-       `innovation_platform`.`vw_member_information`.`phone_number`  AS `phone_number`,
-       `innovation_platform`.`vw_member_information`.`role_name`     AS `role_name`,
-       `innovation_platform`.`vw_member_information`.`given_name`    AS `given_name`,
-       `innovation_platform`.`vw_member_information`.`family_name`   AS `family_name`,
-       `innovation_platform`.`vw_member_information`.`birth_date`    AS `birth_date`,
-       `innovation_platform`.`vw_member_information`.`document_type` AS `document_type`,
-       `innovation_platform`.`vw_member_information`.`gender`        AS `gender`
-from `innovation_platform`.`vw_member_information`
-where (`innovation_platform`.`vw_member_information`.`role_name` like '%Assessor%');
+INSERT INTO innovation_platform.deliverable_types (id,abbreviation,extension,name,normalize_name,active,created_at,created_by,updated_at,updated_by) VALUES
+                                                                                                                                                         ('3597dfe9-fb60-11ee-8265-0242ac110002','PDF','.pdf','Portable Document Format','PORTABLE_DOCUMENT_FORMAT',1,'2024-04-15 19:41:52','root@172.17.0.1',NULL,NULL),
+                                                                                                                                                         ('3599b0fe-fb60-11ee-8265-0242ac110002','DOCX','.docx','Microsoft Word Document','MICROSOFT_WORD_DOCUMENT',1,'2024-04-15 19:41:52','root@172.17.0.1',NULL,NULL);
 
-create definer = root@`%` view vw_authorial_members as
-select `innovation_platform`.`vw_member_information`.`id`            AS `id`,
-       `innovation_platform`.`vw_member_information`.`code`          AS `code`,
-       `innovation_platform`.`vw_member_information`.`user_name`     AS `user_name`,
-       `innovation_platform`.`vw_member_information`.`email`         AS `email`,
-       `innovation_platform`.`vw_member_information`.`phone_number`  AS `phone_number`,
-       `innovation_platform`.`vw_member_information`.`role_name`     AS `role_name`,
-       `innovation_platform`.`vw_member_information`.`given_name`    AS `given_name`,
-       `innovation_platform`.`vw_member_information`.`family_name`   AS `family_name`,
-       `innovation_platform`.`vw_member_information`.`birth_date`    AS `birth_date`,
-       `innovation_platform`.`vw_member_information`.`document_type` AS `document_type`,
-       `innovation_platform`.`vw_member_information`.`gender`        AS `gender`
-from `innovation_platform`.`vw_member_information`
-where ((not ((`innovation_platform`.`vw_member_information`.`role_name` like '%Assessor%'))) and
-       (not ((`innovation_platform`.`vw_member_information`.`role_name` like '%Admin%'))));
+INSERT INTO innovation_platform.roles (id,name,normalized_name,description,active,created_at,created_by,updated_at,updated_by) VALUES
+                                                                                                                                   ('26da04bb-fab9-11ee-94e0-0242ac110002','Admin','ADMIN','Administrator',1,'2024-04-14 23:46:02','root@172.17.0.1',NULL,NULL),
+                                                                                                                                   ('26da2498-fab9-11ee-94e0-0242ac110002','Student','STUDENT','User',1,'2024-04-14 23:46:02','root@172.17.0.1',NULL,NULL),
+                                                                                                                                   ('26da2683-fab9-11ee-94e0-0242ac110002','Teacher','TEACHER','Teacher',1,'2024-04-14 23:46:02','root@172.17.0.1',NULL,NULL),
+                                                                                                                                   ('26da26f7-fab9-11ee-94e0-0242ac110002','Assessor','ASSESSOR','Assessor',1,'2024-04-14 23:46:02','root@172.17.0.1',NULL,NULL);
+INSERT INTO innovation_platform.members (id,fk_document_type,fk_gender,given_name,family_name,birth_date,active,created_at,created_by,updated_at,updated_by,avatar) VALUES
+                                                                                                                                                                        ('2f74d54f-1f8a-11ef-895b-0242ac190002','14aa126f-faba-11ee-94e0-0242ac110002','698c7f5f-faba-11ee-94e0-0242ac110002','Admin','Admin','1995-05-05',1,'2024-05-31 20:13:03','root@172.25.0.3',NULL,NULL,NULL);
+INSERT INTO innovation_platform.users (id,fk_branch,code,user_name,email,password_hash,document_number,phone_number,created_at,created_by,updated_at,updated_by) VALUES
+                                                                                                                                                                     ('2f74d54f-1f8a-11ef-895b-0242ac190002','be7ed35e-fadd-11ee-94e0-0242ac110002','7777777777','admin','admin@admin.com','$2b$12$elL2Tevv0LuWPgGcrMxjjuRH3lI5Jedag7uPWvOVJg3hrHCtDzIES','7777777770','3000000000','2024-05-31 20:13:03','root@172.25.0.3',NULL,NULL);

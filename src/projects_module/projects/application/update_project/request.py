@@ -9,4 +9,4 @@ class UpdateProjectRequest(BaseModel):
     title: Optional[str] = Field(None, description="Title of project")
     description: Optional[str] = Field(None, description="Description of project")
     authors: Optional[List[str]] = Field(None, description="Authors of project")
-    status: Optional[ProjectStatusEnum] = Field(ProjectStatusEnum.PENDING, description="Status of project")
+    status: Optional[ProjectStatusEnum] = Field(None, description="Status of project")

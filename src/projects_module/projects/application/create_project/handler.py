@@ -5,7 +5,7 @@ from src.shared import (Depends,
                         Result,
                         Error)
 from .command import CreateProjectCommand
-from ...domain import ProjectEntity
+from ...domain import CreateProjectEntity
 from ...infrastructure import ProjectsRepository
 from ....deliverable_types import DeliverableTypesRepository
 
@@ -22,7 +22,7 @@ class CreateProjectCommandHandler(CommandHandler[CreateProjectCommand, str]):
 
         authors_str = ','.join(command.authors)
 
-        entity = ProjectEntity(
+        entity = CreateProjectEntity(
             assessor_id=command.assessor,
             project_id=str(project_id),
             project_type_id=command.type,

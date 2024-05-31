@@ -1,5 +1,5 @@
 from src.shared import Depends, create_session, Repository, SESSION_LOCAL
-from ..domain import ProjectEntity
+from ..domain import CreateProjectEntity
 
 
 class ProjectsRepository(Repository):
@@ -11,7 +11,7 @@ class ProjectsRepository(Repository):
     def __table_name__(self):
         return 'projects', 'project'
 
-    async def insert_project(self, project: ProjectEntity):
+    async def insert_project(self, project: CreateProjectEntity):
         return await self.execute_stored_procedure_from_model(
             'sp_insert_project',
             project.model_dump())

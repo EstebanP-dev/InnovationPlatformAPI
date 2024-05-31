@@ -30,7 +30,7 @@ async def update_project(
         request: CreateProjectRequest,
         tenant_id: str = Depends(get_tenant_id),
         handler: UpdateProjectCommandHandler = Depends()):
-    command = UpdateProjectCommand(project_id, **request.model_dump(), branch=tenant_id)
+    command = UpdateProjectCommand(**request.model_dump(), project_id=project_id, branch=tenant_id)
 
     result = await handler.handle(command)
 

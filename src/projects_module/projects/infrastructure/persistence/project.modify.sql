@@ -64,6 +64,8 @@ BEGIN
             updated_by = USER()
     WHERE id = project_id;
 
+    SELECT 1;
+
     COMMIT;
 END $$
 

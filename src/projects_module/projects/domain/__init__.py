@@ -1,2 +1,3 @@
 from .status import *
-from .project_entity import ProjectEntity
+from .create_project_entity import CreateProjectEntity
+from .update_project_entity import UpdateProjectEntity

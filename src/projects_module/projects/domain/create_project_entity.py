@@ -1,7 +1,7 @@
 from src.shared import BaseModel, Field, Optional
 
 
-class ProjectEntity(BaseModel):
+class CreateProjectEntity(BaseModel):
     assessor_id: Optional[str] = Field(None)
     project_id: Optional[str] = Field(None)
     project_type_id: Optional[str] = Field(None)
