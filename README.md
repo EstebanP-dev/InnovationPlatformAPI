@@ -4,17 +4,17 @@ Este proyecto es una API construida con FastAPI y MySQL, dockerizada para facili
 
 ## Requisitos
 
-- Python 3.12
-- Docker
-- Docker Compose
+- [Python 3.12](https://www.python.org/downloads/release/python-3123/)
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
 
 ## Instalación
 
 ### 1. Clonar el repositorio
 
 ```bash
-git clone <URL_DEL_REPOSITORIO>
-cd <NOMBRE_DEL_REPOSITORIO>
+git clone https://github.com/EstebanP-dev/InnovationPlatformAPI.git
+cd InnovationPlatformAPI
 ```
 ### 2. Crear archivo `.env`
 Crea un archivo `.env` en el directorio base del proyecto con el siguiente contenido:
@@ -49,7 +49,6 @@ Para crear las tablas y poblar la base de datos con datos de prueba, ejecuta los
 
 ```bash
 docker exec -i INNP.Database mysql -u root -proot innovation_platform < /create_db.sql
-docker exec -i innovation-platform-db mysql -uroot -proot innovation-platform < test_data.sql
 ```
 
 ## Uso

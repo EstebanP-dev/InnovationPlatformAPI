@@ -768,13 +768,10 @@ END;
 create
     definer = root@`%` procedure sp_get_total_by_status(IN user_id char(36), OUT total_projects int)
 BEGIN
-    DECLARE user_role CHAR(36);
+    SET @admin_role = '26da04bb-fab9-11ee-94e0-0242ac110002';
+    SET @is_admin = EXISTS(SELECT 1 FROM user_roles WHERE fk_user = user_id AND fk_role = '26da04bb-fab9-11ee-94e0-0242ac110002');
 
-    SELECT fk_role INTO user_role
-    FROM user_roles
-    WHERE fk_user = user_id;
-
-    IF user_role = '26da04bb-fab9-11ee-94e0-0242ac110002' THEN
+    IF @is_admin THEN
         SELECT COUNT(*) INTO total_projects FROM projects WHERE active = TRUE;
 
         SELECT status, COUNT(*) as total, MAX(created_at) as last_created
