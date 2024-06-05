@@ -1,9 +1,6 @@
-create database if not exists innovation_platform;
-
 create table if not exists companies
 (
-    id             char(36)         not null
-        primary key,
+    id             char(36)         not null,
     name           varchar(60)      not null,
     normalize_name varchar(60)      not null,
     description    varchar(255)     null,
@@ -15,6 +12,7 @@ create table if not exists companies
     created_by     varchar(50)      not null,
     updated_at     datetime         null,
     updated_by     varchar(50)      null,
+    primary key (id),
     constraint email
         unique (email),
     constraint name
@@ -27,8 +25,7 @@ create table if not exists companies
 
 create table if not exists countries
 (
-    id              char(36)         not null
-        primary key,
+    id              char(36)         not null,
     name            varchar(60)      not null,
     normalized_name varchar(60)      not null,
     abbreviation    char(5)          not null,
@@ -38,6 +35,7 @@ create table if not exists countries
     created_by      varchar(50)      not null,
     updated_at      datetime         null,
     updated_by      varchar(50)      null,
+    primary key (id),
     constraint name
         unique (name),
     constraint normalized_name
@@ -48,8 +46,7 @@ create table if not exists countries
 
 create table if not exists deliverable_types
 (
-    id             char(36)         not null
-        primary key,
+    id             char(36)         not null,
     abbreviation   char(5)          not null,
     extension      char(5)          not null,
     name           varchar(60)      not null,
@@ -59,6 +56,7 @@ create table if not exists deliverable_types
     created_by     varchar(50)      not null,
     updated_at     datetime         null,
     updated_by     varchar(50)      null,
+    primary key (id),
     constraint abbreviation
         unique (abbreviation),
     constraint extension
@@ -71,8 +69,7 @@ create table if not exists deliverable_types
 
 create table if not exists document_types
 (
-    id              char(36)         not null
-        primary key,
+    id              char(36)         not null,
     abbreviation    char(5)          not null,
     name            varchar(60)      not null,
     normalized_name varchar(60)      not null,
@@ -80,13 +77,13 @@ create table if not exists document_types
     created_at      datetime         not null,
     created_by      varchar(50)      not null,
     updated_at      datetime         null,
-    updated_by      varchar(50)      null
+    updated_by      varchar(50)      null,
+    primary key (id)
 );
 
 create table if not exists genders
 (
-    id              char(36)         not null
-        primary key,
+    id              char(36)         not null,
     abbreviation    char(5)          not null,
     name            varchar(60)      not null,
     normalized_name varchar(60)      not null,
@@ -94,13 +91,13 @@ create table if not exists genders
     created_at      datetime         not null,
     created_by      varchar(50)      not null,
     updated_at      datetime         null,
-    updated_by      varchar(50)      null
+    updated_by      varchar(50)      null,
+    primary key (id)
 );
 
 create table if not exists members
 (
-    id               char(36)         not null
-        primary key,
+    id               char(36)         not null,
     fk_document_type char(36)         not null,
     fk_gender        char(36)         not null,
     given_name       varchar(100)     not null,
@@ -112,6 +109,7 @@ create table if not exists members
     updated_at       datetime         null,
     updated_by       varchar(50)      null,
     avatar           varchar(255)     null,
+    primary key (id),
     constraint members_ibfk_1
         foreign key (fk_document_type) references document_types (id),
     constraint members_ibfk_2
@@ -126,22 +124,21 @@ create index fk_gender
 
 create table if not exists project_assessors
 (
-    id         char(36)         not null
-        primary key,
+    id         char(36)         not null,
     code       char(36)         not null,
     active     bit default b'1' null,
     created_at datetime         not null,
     created_by varchar(50)      not null,
     updated_at datetime         null,
     updated_by varchar(50)      null,
+    primary key (id),
     constraint project_assessors_ibfk_1
         foreign key (id) references members (id)
 );
 
 create table if not exists project_types
 (
-    id             char(36)         not null
-        primary key,
+    id             char(36)         not null,
     name           varchar(60)      not null,
     normalize_name varchar(60)      not null,
     active         bit default b'1' null,
@@ -149,6 +146,7 @@ create table if not exists project_types
     created_by     varchar(50)      not null,
     updated_at     datetime         null,
     updated_by     varchar(50)      null,
+    primary key (id),
     constraint name
         unique (name),
     constraint normalize_name
@@ -157,8 +155,7 @@ create table if not exists project_types
 
 create table if not exists projects
 (
-    id                    char(36)                                                                         not null
-        primary key,
+    id                    char(36)                                                                         not null,
     fk_assessor           char(36)                                                                         not null,
     fk_type               char(36)                                                                         not null,
     status                enum ('Completado', 'En Progreso', 'En Espera', 'Pendiente') default 'Pendiente' not null,
@@ -171,6 +168,7 @@ create table if not exists projects
     updated_at            datetime                                                                         null,
     updated_by            varchar(50)                                                                      null,
     deliverable_folder_id char(36)                                                                         null,
+    primary key (id),
     constraint normalized_title
         unique (normalized_title),
     constraint title
@@ -183,12 +181,12 @@ create table if not exists projects
 
 create table if not exists project_authors
 (
-    id         char(36)    not null
-        primary key,
+    id         char(36)    not null,
     fk_project char(36)    not null,
     fk_author  char(36)    not null,
     created_at datetime    not null,
     created_by varchar(50) not null,
+    primary key (id),
     constraint project_authors_ibfk_1
         foreign key (fk_project) references projects (id),
     constraint project_authors_ibfk_2
@@ -203,8 +201,7 @@ create index fk_project
 
 create table if not exists project_deliverables
 (
-    id              char(36)                                                                not null
-        primary key,
+    id              char(36)                                                                not null,
     status          enum ('Pending', 'Reviewing', 'Approved', 'Rejected') default 'Pending' null,
     fk_type         char(36)                                                                not null,
     fk_project      char(36)                                                                not null,
@@ -217,6 +214,7 @@ create table if not exists project_deliverables
     created_by      varchar(50)                                                             not null,
     updated_at      datetime                                                                null,
     updated_by      varchar(50)                                                             null,
+    primary key (id),
     constraint project_deliverables_ibfk_1
         foreign key (fk_type) references deliverable_types (id),
     constraint project_deliverables_ibfk_2
@@ -237,8 +235,7 @@ create index fk_type
 
 create table if not exists roles
 (
-    id              char(36)         not null
-        primary key,
+    id              char(36)         not null,
     name            varchar(60)      not null,
     normalized_name varchar(60)      not null,
     description     varchar(255)     null,
@@ -247,6 +244,7 @@ create table if not exists roles
     created_by      varchar(50)      not null,
     updated_at      datetime         null,
     updated_by      varchar(50)      null,
+    primary key (id),
     constraint name
         unique (name),
     constraint normalized_name
@@ -255,8 +253,7 @@ create table if not exists roles
 
 create table if not exists states
 (
-    id              char(36)         not null
-        primary key,
+    id              char(36)         not null,
     fk_country      char(36)         not null,
     name            varchar(60)      not null,
     normalized_name varchar(60)      not null,
@@ -266,6 +263,7 @@ create table if not exists states
     created_by      varchar(50)      not null,
     updated_at      datetime         null,
     updated_by      varchar(50)      null,
+    primary key (id),
     constraint abbreviation
         unique (abbreviation),
     constraint name
@@ -278,8 +276,7 @@ create table if not exists states
 
 create table if not exists cities
 (
-    id              char(36)         not null
-        primary key,
+    id              char(36)         not null,
     fk_state        char(36)         not null,
     name            varchar(60)      not null,
     normalized_name varchar(60)      not null,
@@ -289,6 +286,7 @@ create table if not exists cities
     created_by      varchar(50)      not null,
     updated_at      datetime         null,
     updated_by      varchar(50)      null,
+    primary key (id),
     constraint abbreviation
         unique (abbreviation),
     constraint name
@@ -301,8 +299,7 @@ create table if not exists cities
 
 create table if not exists branches
 (
-    id             char(36)         not null
-        primary key,
+    id             char(36)         not null,
     fk_city        char(36)         not null,
     fk_company     char(36)         not null,
     name           varchar(60)      not null,
@@ -317,6 +314,7 @@ create table if not exists branches
     created_by     varchar(50)      not null,
     updated_at     datetime         null,
     updated_by     varchar(50)      null,
+    primary key (id),
     constraint email
         unique (email),
     constraint phone_number
@@ -341,8 +339,7 @@ create index fk_country
 
 create table if not exists users
 (
-    id              char(36)     not null
-        primary key,
+    id              char(36)     not null,
     fk_branch       char(36)     not null,
     code            varchar(20)  not null,
     user_name       varchar(50)  not null,
@@ -354,6 +351,7 @@ create table if not exists users
     created_by      varchar(50)  not null,
     updated_at      datetime     null,
     updated_by      varchar(50)  null,
+    primary key (id),
     constraint code
         unique (code),
     constraint document_number
@@ -372,14 +370,14 @@ create table if not exists users
 
 create table if not exists user_roles
 (
-    id         char(36)    not null
-        primary key,
+    id         char(36)    not null,
     fk_user    char(36)    not null,
     fk_role    char(36)    not null,
     created_at datetime    not null,
     created_by varchar(50) not null,
     updated_at datetime    null,
     updated_by varchar(50) null,
+    primary key (id),
     constraint user_roles_ibfk_1
         foreign key (fk_user) references users (id),
     constraint user_roles_ibfk_2
@@ -1053,14 +1051,15 @@ BEGIN
     COMMIT;
 END;
 
+
 INSERT INTO innovation_platform.countries (id,name,normalized_name,abbreviation,zip_code,active,created_at,created_by,updated_at,updated_by) VALUES
     ('dafb2e40-fabb-11ee-94e0-0242ac110002','Colombia','COLOMBIA','CO','57',1,'2024-04-15 00:05:23','root@172.17.0.1',NULL,NULL);
 INSERT INTO innovation_platform.states (id,fk_country,name,normalized_name,abbreviation,active,created_at,created_by,updated_at,updated_by) VALUES
     ('d41d5018-fadc-11ee-94e0-0242ac110002','dafb2e40-fabb-11ee-94e0-0242ac110002','Antioquia','ANTIOQUIA','ANT',1,'2024-04-15 04:01:25','root@172.17.0.1',NULL,NULL);
 INSERT INTO innovation_platform.cities (id,fk_state,name,normalized_name,abbreviation,active,created_at,created_by,updated_at,updated_by) VALUES
     ('32a43022-fadd-11ee-94e0-0242ac110002','d41d5018-fadc-11ee-94e0-0242ac110002','Medellín','MEDELLIN','MED',1,'2024-04-15 04:04:03','root@172.17.0.1',NULL,NULL);
-INSERT INTO innovation_platform.countries (id,name,normalized_name,abbreviation,zip_code,active,created_at,created_by,updated_at,updated_by) VALUES
-    ('dafb2e40-fabb-11ee-94e0-0242ac110002','Colombia','COLOMBIA','CO','57',1,'2024-04-15 00:05:23','root@172.17.0.1',NULL,NULL);
+INSERT INTO innovation_platform.companies (id,name,normalize_name,description,avatar,email,phone_number,active,created_at,created_by,updated_at,updated_by) VALUES
+    ('6afca21c-fabb-11ee-94e0-0242ac110002','Universidad de San Buenaventura','UNIVERSIDAD_DE_SAN_BUENAVENTURA','Universidad de San Buenaventura','https://www.usbbog.edu.co/wp-content/uploads/2019/07/Logo-USB-2019.png','soporte@usbmed.edu.co','+57 4 448 83 88',1,'2024-04-15 00:02:15','root@172.17.0.1',NULL,NULL);
 INSERT INTO innovation_platform.branches (id,fk_city,fk_company,name,normalize_name,description,avatar,address,email,phone_number,active,created_at,created_by,updated_at,updated_by) VALUES
     ('be7ed35e-fadd-11ee-94e0-0242ac110002','32a43022-fadd-11ee-94e0-0242ac110002','6afca21c-fabb-11ee-94e0-0242ac110002','Universidad de San Buenaventura Sede Medellín','UNIVERSIDAD_DE_SAN_BUENAVENTURA_SEDE_MEDELLIN','Universidad de San Buenaventura Sede Medellín','https://www.usbmed.edu.co/wp-content/uploads/2019/07/usbmed-logo.png','Carrera 51D #67B-90','support@usbmed.edu.co','444 44 44',1,'2024-04-15 04:07:58','root@172.17.0.1',NULL,NULL);
 INSERT INTO innovation_platform.document_types (id,abbreviation,name,normalized_name,active,created_at,created_by,updated_at,updated_by) VALUES
@@ -1079,11 +1078,14 @@ INSERT INTO innovation_platform.deliverable_types (id,abbreviation,extension,nam
                                                                                                                                                          ('3599b0fe-fb60-11ee-8265-0242ac110002','DOCX','.docx','Microsoft Word Document','MICROSOFT_WORD_DOCUMENT',1,'2024-04-15 19:41:52','root@172.17.0.1',NULL,NULL);
 
 INSERT INTO innovation_platform.roles (id,name,normalized_name,description,active,created_at,created_by,updated_at,updated_by) VALUES
-                                                                                                                                   ('26da04bb-fab9-11ee-94e0-0242ac110002','Admin','ADMIN','Administrator',1,'2024-04-14 23:46:02','root@172.17.0.1',NULL,NULL),
+                                       ('26da04bb-fab9-11ee-94e0-0242ac110002','Admin','ADMIN','Administrator',1,'2024-04-14 23:46:02','root@172.17.0.1',NULL,NULL),
                                                                                                                                    ('26da2498-fab9-11ee-94e0-0242ac110002','Student','STUDENT','User',1,'2024-04-14 23:46:02','root@172.17.0.1',NULL,NULL),
                                                                                                                                    ('26da2683-fab9-11ee-94e0-0242ac110002','Teacher','TEACHER','Teacher',1,'2024-04-14 23:46:02','root@172.17.0.1',NULL,NULL),
                                                                                                                                    ('26da26f7-fab9-11ee-94e0-0242ac110002','Assessor','ASSESSOR','Assessor',1,'2024-04-14 23:46:02','root@172.17.0.1',NULL,NULL);
 INSERT INTO innovation_platform.members (id,fk_document_type,fk_gender,given_name,family_name,birth_date,active,created_at,created_by,updated_at,updated_by,avatar) VALUES
-                                                                                                                                                                        ('2f74d54f-1f8a-11ef-895b-0242ac190002','14aa126f-faba-11ee-94e0-0242ac110002','698c7f5f-faba-11ee-94e0-0242ac110002','Admin','Admin','1995-05-05',1,'2024-05-31 20:13:03','root@172.25.0.3',NULL,NULL,NULL);
+    ('2f74d54f-1f8a-11ef-895b-0242ac190002','14aa126f-faba-11ee-94e0-0242ac110002','698c7f5f-faba-11ee-94e0-0242ac110002','Admin','Admin','1995-05-05',1,'2024-05-31 20:13:03','root@172.25.0.3',NULL,NULL,NULL);
 INSERT INTO innovation_platform.users (id,fk_branch,code,user_name,email,password_hash,document_number,phone_number,created_at,created_by,updated_at,updated_by) VALUES
-                                                                                                                                                                     ('2f74d54f-1f8a-11ef-895b-0242ac190002','be7ed35e-fadd-11ee-94e0-0242ac110002','7777777777','admin','admin@admin.com','$2b$12$elL2Tevv0LuWPgGcrMxjjuRH3lI5Jedag7uPWvOVJg3hrHCtDzIES','7777777770','3000000000','2024-05-31 20:13:03','root@172.25.0.3',NULL,NULL);
+    ('2f74d54f-1f8a-11ef-895b-0242ac190002','be7ed35e-fadd-11ee-94e0-0242ac110002','7777777777','admin','admin@admin.com','$2b$12$elL2Tevv0LuWPgGcrMxjjuRH3lI5Jedag7uPWvOVJg3hrHCtDzIES','7777777770','3000000000','2024-05-31 20:13:03','root@172.25.0.3',NULL,NULL);
+
+INSERT INTO innovation_platform.user_roles (id,fk_user,fk_role,created_at,created_by,updated_at,updated_by) VALUES
+    ('1cdd8d00-fae1-11ee-94e0-0242ac110002','2f74d54f-1f8a-11ef-895b-0242ac190002','26da04bb-fab9-11ee-94e0-0242ac110002','2024-04-15 04:32:05','root@172.17.0.1',NULL,NULL);
